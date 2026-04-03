@@ -14,9 +14,15 @@ export const createPost = async (req: any, res: Response) => {
 
 // GET
 export const getFeed = async (req: any, res: Response) => {
-  const result = await PostService.getFeed(req.user.id);
+  const result = await PostService.getFeed(
+    req.user.id,
+    req.query
+  );
 
-  res.json({ success: true, data: result });
+  res.json({
+    success: true,
+    ...result,
+  });
 };
 
 // UPDATE

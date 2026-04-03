@@ -17,13 +17,52 @@ export const createPost = async (userId: string, payload: any, file?: any) => {
 };
 
 // GET FEED
-export const getFeed = async (userId: string) => {
-  return await Post.find({
-    $or: [{ isPrivate: false }, { user: userId }],
-  })
+export const getFeed = async (
+  userId: string,
+  query: any
+) => {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 10;
+  const search = query.search || "";
+
+  const skip = (page - 1) * limit;
+
+  //  Search condition
+  const searchCondition = search
+    ? {
+        text: { $regex: search, $options: "i" },
+      }
+    : {};
+
+  
+  const filter = {
+    $and: [
+      {
+        $or: [{ isPrivate: false }, { user: userId }],
+      },
+      searchCondition,
+    ],
+  };
+
+  const posts = await Post.find(filter)
     .populate("user")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Post.countDocuments(filter);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+    data: posts,
+  };
 };
+
 
 // UPDATE POST
 export const updatePost = async (
