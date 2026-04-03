@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import AuthRouter from "./model/auth/auth.route";
  
 
 dotenv.config();
@@ -14,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-// app.use("/api", routes);
+app.use("/api/auth", AuthRouter);
 
 // Database + Server start
 async function main() {
