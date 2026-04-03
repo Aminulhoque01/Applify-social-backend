@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import AuthRouter from "./model/auth/auth.route";
+import postRouter from "./model/post/post.route";
  
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", AuthRouter);
+app.use("/api/post", postRouter);
 
 // Database + Server start
 async function main() {
