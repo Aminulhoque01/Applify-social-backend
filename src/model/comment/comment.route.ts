@@ -8,10 +8,7 @@ import { authMiddleware } from "../middleware/auth.middleware";
 
 const commentRouter = express.Router();
 
-// create comment or reply
-commentRouter.post("/", authMiddleware, createComment);
-
-// get comments by post
+commentRouter.post("/:postId", authMiddleware, createComment);
 commentRouter.get("/:postId", authMiddleware, getComments);
 
 export default commentRouter;

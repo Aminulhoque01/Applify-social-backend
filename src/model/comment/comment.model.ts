@@ -1,28 +1,25 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 
 const commentSchema = new Schema(
   {
-    post: {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-      required: true,
-    },
+    text: { type: String, required: true },
 
     user: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    text: {
-      type: String,
+    post: {
+      type: Types.ObjectId,
+      ref: "Post",
       required: true,
     },
 
     parentComment: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "Comment",
-      default: null,
+      default: null, // ✅ for replies
     },
   },
   { timestamps: true }
