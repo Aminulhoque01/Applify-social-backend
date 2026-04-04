@@ -25,6 +25,18 @@ export const getFeed = async (req: any, res: Response) => {
   });
 };
 
+export const getSingle = async (req: any, res: Response) => {
+  const result = await PostService.getSingle(
+    req.user.id,
+    req.params.id // ✅ FIXED
+  );
+
+  res.json({
+    success: true,
+    data: result,
+  });
+};
+
 // UPDATE
 export const updatePost = async (req: any, res: Response) => {
   const result = await PostService.updatePost(

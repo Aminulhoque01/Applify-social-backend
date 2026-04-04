@@ -64,6 +64,24 @@ export const getFeed = async (
 };
 
 
+export const getSingle = async (
+  userId: string,
+  id: string
+) => {
+  const post = await Post.findById(id).populate("user");
+
+  if (!post) {
+    throw new Error("Post not found");
+  }
+
+  // Privacy check
+  if (post.isPrivate && post.user?.toString() !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  return post;
+};
+
 // UPDATE POST
 export const updatePost = async (
   postId: string,

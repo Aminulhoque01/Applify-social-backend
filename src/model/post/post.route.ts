@@ -14,6 +14,7 @@ postRouter.post(
 );
 
 postRouter.get("/", authMiddleware, PostController.getFeed);
+postRouter.get("/:id", authMiddleware, PostController.getSingle);
 
 postRouter.put(
   "/:id",
