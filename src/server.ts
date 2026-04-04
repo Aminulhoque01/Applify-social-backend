@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import AuthRouter from "./model/auth/auth.route";
 import postRouter from "./model/post/post.route";
 import commentRouter from "./model/comment/comment.route";
+import LinkRouter from "./model/like/like.route";
  
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/auth", AuthRouter);
 app.use("/api/post", postRouter);
 app.use("/api/comment", commentRouter);
+app.use("/api/like", LinkRouter);
 
 // Database + Server start
 async function main() {
