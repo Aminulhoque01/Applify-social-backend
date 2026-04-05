@@ -23,6 +23,14 @@ app.use("/api/post", postRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/like", LinkRouter);
 
+// Health check route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is running successfully 🚀",
+  });
+});
+
 // Database + Server start
 async function main() {
   try {

@@ -31,6 +31,13 @@ app.use("/api/auth", auth_route_1.default);
 app.use("/api/post", post_route_1.default);
 app.use("/api/comment", comment_route_1.default);
 app.use("/api/like", like_route_1.default);
+// Health check route
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Server is running successfully 🚀",
+    });
+});
 // Database + Server start
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
