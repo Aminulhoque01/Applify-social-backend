@@ -19,7 +19,7 @@ const commentSchema = new Schema(
     parentComment: {
       type: Types.ObjectId,
       ref: "Comment",
-      default: null, // ✅ for replies
+      default: null, 
     },
   },
   { timestamps: true }

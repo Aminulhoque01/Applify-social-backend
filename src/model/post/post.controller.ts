@@ -4,7 +4,7 @@ import * as PostService from "./post.service";
 // CREATE
 export const createPost = async (req: any, res: Response) => {
   const result = await PostService.createPost(
-    req.user.id,
+    req.id,
     req.body,
     req.file
   );
@@ -15,7 +15,7 @@ export const createPost = async (req: any, res: Response) => {
 // GET
 export const getFeed = async (req: any, res: Response) => {
   const result = await PostService.getFeed(
-    req.user.id,
+    req.id,
     req.query
   );
 
@@ -27,8 +27,8 @@ export const getFeed = async (req: any, res: Response) => {
 
 export const getSingle = async (req: any, res: Response) => {
   const result = await PostService.getSingle(
-    req.user.id,
-    req.params.id // ✅ FIXED
+    req.id,
+    req.params.id  
   );
 
   res.json({
@@ -41,7 +41,7 @@ export const getSingle = async (req: any, res: Response) => {
 export const updatePost = async (req: any, res: Response) => {
   const result = await PostService.updatePost(
     req.params.id,
-    req.user.id,
+    req.id,
     req.body,
     req.file
   );
@@ -53,7 +53,7 @@ export const updatePost = async (req: any, res: Response) => {
 export const deletePost = async (req: any, res: Response) => {
   const result = await PostService.deletePost(
     req.params.id,
-    req.user.id
+    req.id
   );
 
   res.json({ success: true, data: result });

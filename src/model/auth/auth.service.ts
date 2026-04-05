@@ -2,6 +2,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../User/user.model";
+import cloudinary from "../../config/cloudinary";
 
 export const registerUser = async (payload: any) => {
   const hashedPassword = await bcrypt.hash(payload.password, 10);
@@ -29,4 +30,21 @@ export const loginUser = async (payload: any) => {
   );
 
   return { token };
+};
+
+
+export const getUserByIdService = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  return user;
+};
+ 
+
+export const updateUserService = async (userId: string, payload: any) => {
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: payload },
+    { new: true }
+  ).select("-password");
+
+  return updatedUser;
 };

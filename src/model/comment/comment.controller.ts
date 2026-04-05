@@ -4,7 +4,7 @@ import * as CommentService from "./comment.service";
 // Create comment or reply
 export const createComment = async (req: any, res: Response) => {
   const result = await CommentService.createComment(
-    req.user.id,
+    req.id,
     req.params.postId, // get postId from URL
     req.body
   );

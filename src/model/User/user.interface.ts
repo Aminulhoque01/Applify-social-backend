@@ -3,6 +3,7 @@ export interface IUser extends Document {
   lastName: string;
   email: string;
   password: string;
+  profileImage:string;
   createdAt: Date;
   updatedAt: Date;
 }
