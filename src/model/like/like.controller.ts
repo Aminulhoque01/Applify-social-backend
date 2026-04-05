@@ -5,7 +5,7 @@ export const toggleLike = async (req: any, res: Response) => {
   const { targetId, targetType } = req.body;
 
   const result = await LikeService.toggleLike(
-    req.user.id,
+    req.id,
     targetId,
     targetType
   );
