@@ -38,7 +38,7 @@ exports.createComment = createComment;
 // Get comments with replies
 const getPostComments = (postId) => __awaiter(void 0, void 0, void 0, function* () {
     const comments = yield comment_model_1.Comment.find({ post: postId })
-        .populate("user", "firstName lastName")
+        .populate("user", "firstName lastName profileImage")
         .sort({ createdAt: -1 });
     // separate parent + replies
     const parentComments = comments.filter(c => !c.parentComment);

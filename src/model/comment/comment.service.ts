@@ -34,7 +34,7 @@ export const createComment = async (
 // Get comments with replies
 export const getPostComments = async (postId: string) => {
   const comments = await Comment.find({ post: postId })
-    .populate("user", "firstName lastName")
+    .populate("user", "firstName lastName profileImage")
     .sort({ createdAt: -1 });
 
   // separate parent + replies

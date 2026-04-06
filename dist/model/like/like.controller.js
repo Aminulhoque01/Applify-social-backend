@@ -46,7 +46,7 @@ exports.getLikes = exports.toggleLike = void 0;
 const LikeService = __importStar(require("./like.service"));
 const toggleLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { targetId, targetType } = req.body;
-    const result = yield LikeService.toggleLike(req.user.id, targetId, targetType);
+    const result = yield LikeService.toggleLike(req.id, targetId, targetType);
     res.json({
         success: true,
         data: result,
