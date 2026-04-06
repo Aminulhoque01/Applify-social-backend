@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePost = exports.updatePost = exports.getSingle = exports.getFeed = exports.createPost = void 0;
 const post_model_1 = require("./post.model");
 const cloudinary_1 = __importDefault(require("../../config/cloudinary"));
+const like_model_1 = require("../like/like.model");
 // CREATE POST
 const createPost = (userId, payload, file) => __awaiter(void 0, void 0, void 0, function* () {
     let imageUrl = "";
@@ -30,11 +31,8 @@ const getFeed = (userId, query) => __awaiter(void 0, void 0, void 0, function* (
     const limit = parseInt(query.limit) || 10;
     const search = query.search || "";
     const skip = (page - 1) * limit;
-    //  Search condition
     const searchCondition = search
-        ? {
-            text: { $regex: search, $options: "i" },
-        }
+        ? { text: { $regex: search, $options: "i" } }
         : {};
     const filter = {
         $and: [
@@ -49,6 +47,19 @@ const getFeed = (userId, query) => __awaiter(void 0, void 0, void 0, function* (
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
+    const formattedPosts = yield Promise.all(posts.map((post) => __awaiter(void 0, void 0, void 0, function* () {
+        const totalLikes = yield like_model_1.Like.countDocuments({
+            targetId: post._id,
+            targetType: "post",
+        });
+        const likedByMe = !!(yield like_model_1.Like.findOne({
+            user: userId,
+            targetId: post._id,
+            targetType: "post",
+        }));
+        return Object.assign(Object.assign({}, post.toObject()), { totalLikes,
+            likedByMe });
+    })));
     const total = yield post_model_1.Post.countDocuments(filter);
     return {
         meta: {
@@ -57,21 +68,25 @@ const getFeed = (userId, query) => __awaiter(void 0, void 0, void 0, function* (
             total,
             totalPage: Math.ceil(total / limit),
         },
-        data: posts,
+        data: formattedPosts,
     };
 });
 exports.getFeed = getFeed;
 const getSingle = (userId, id) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const post = yield post_model_1.Post.findById(id).populate("user");
-    if (!post) {
+    if (!post)
         throw new Error("Post not found");
-    }
-    // Privacy check
-    if (post.isPrivate && ((_a = post.user) === null || _a === void 0 ? void 0 : _a.toString()) !== userId) {
-        throw new Error("Unauthorized");
-    }
-    return post;
+    const totalLikes = yield like_model_1.Like.countDocuments({
+        targetId: post._id,
+        targetType: "post",
+    });
+    const likedByMe = !!(yield like_model_1.Like.findOne({
+        user: userId,
+        targetId: post._id,
+        targetType: "post",
+    }));
+    return Object.assign(Object.assign({}, post.toObject()), { totalLikes,
+        likedByMe });
 });
 exports.getSingle = getSingle;
 // UPDATE POST

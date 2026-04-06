@@ -1,5 +1,6 @@
 import { Post } from "./post.model";
 import cloudinary from "../../config/cloudinary";
+import { Like } from "../like/like.model";
 
 // CREATE POST
 export const createPost = async (userId: string, payload: any, file?: any) => {
@@ -17,24 +18,17 @@ export const createPost = async (userId: string, payload: any, file?: any) => {
 };
 
 // GET FEED
-export const getFeed = async (
-  userId: string,
-  query: any
-) => {
+export const getFeed = async (userId: string, query: any) => {
   const page = parseInt(query.page) || 1;
   const limit = parseInt(query.limit) || 10;
   const search = query.search || "";
 
   const skip = (page - 1) * limit;
 
-  //  Search condition
   const searchCondition = search
-    ? {
-        text: { $regex: search, $options: "i" },
-      }
+    ? { text: { $regex: search, $options: "i" } }
     : {};
 
-  
   const filter = {
     $and: [
       {
@@ -50,6 +44,27 @@ export const getFeed = async (
     .skip(skip)
     .limit(limit);
 
+  const formattedPosts = await Promise.all(
+    posts.map(async (post) => {
+      const totalLikes = await Like.countDocuments({
+        targetId: post._id,
+        targetType: "post",
+      });
+
+      const likedByMe = !!(await Like.findOne({
+        user: userId,
+        targetId: post._id,
+        targetType: "post",
+      }));
+
+      return {
+        ...post.toObject(),
+        totalLikes,
+        likedByMe,
+      };
+    })
+  );
+
   const total = await Post.countDocuments(filter);
 
   return {
@@ -59,27 +74,31 @@ export const getFeed = async (
       total,
       totalPage: Math.ceil(total / limit),
     },
-    data: posts,
+    data: formattedPosts,
   };
 };
 
-
-export const getSingle = async (
-  userId: string,
-  id: string
-) => {
+export const getSingle = async (userId: string, id: string) => {
   const post = await Post.findById(id).populate("user");
 
-  if (!post) {
-    throw new Error("Post not found");
-  }
+  if (!post) throw new Error("Post not found");
 
-  // Privacy check
-  if (post.isPrivate && post.user?.toString() !== userId) {
-    throw new Error("Unauthorized");
-  }
+  const totalLikes = await Like.countDocuments({
+    targetId: post._id,
+    targetType: "post",
+  });
 
-  return post;
+  const likedByMe = !!(await Like.findOne({
+    user: userId,
+    targetId: post._id,
+    targetType: "post",
+  }));
+
+  return {
+    ...post.toObject(),
+    totalLikes,
+    likedByMe,
+  };
 };
 
 // UPDATE POST

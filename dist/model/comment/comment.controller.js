@@ -56,8 +56,7 @@ const createComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.createComment = createComment;
 // Get all comments + replies for a post
 const getComments = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { postId } = req.params;
-    const result = yield CommentService.getPostComments(postId);
+    const result = yield CommentService.getPostComments(req.params.postId, req.id);
     res.json({
         success: true,
         data: result,

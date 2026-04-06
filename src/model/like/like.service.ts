@@ -1,10 +1,9 @@
 import { Like } from "./like.model";
 
-// Toggle Like / Unlike
 export const toggleLike = async (
   userId: string,
   targetId: string,
-  targetType: "Post" | "Comment"
+  targetType: "post" | "comment"
 ) => {
   const existing = await Like.findOne({
     user: userId,
@@ -12,25 +11,58 @@ export const toggleLike = async (
     targetType,
   });
 
+  let liked = false;
+
   if (existing) {
     await existing.deleteOne();
-    return { liked: false };
+    liked = false;
+  } else {
+    await Like.create({
+      user: userId,
+      targetId,
+      targetType,
+    });
+    liked = true;
   }
 
-  await Like.create({
-    user: userId,
+  const totalLikes = await Like.countDocuments({
     targetId,
     targetType,
   });
 
-  return { liked: true };
+  return {
+    liked,
+    totalLikes,
+    targetId,
+    targetType,
+  };
 };
 
-// Get users who liked
-export const getLikes = async (
+// reusable helper
+export const getLikeInfo = async (
   targetId: string,
-  targetType: "Post" | "Comment"
+  targetType: "post" | "comment",
+  userId?: string
 ) => {
-  return await Like.find({ targetId, targetType })
-    .populate("user", "firstName lastName");
+  const totalLikes = await Like.countDocuments({
+    targetId,
+    targetType,
+  });
+
+  let likedByMe = false;
+
+  if (userId) {
+    const existing = await Like.findOne({
+      user: userId,
+      targetId,
+      targetType,
+    });
+
+    likedByMe = !!existing;
+  }
+
+  return {
+    totalLikes,
+    likedByMe,
+  };
 };

@@ -45,20 +45,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLikes = exports.toggleLike = void 0;
 const LikeService = __importStar(require("./like.service"));
 const toggleLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { targetId, targetType } = req.body;
-    const result = yield LikeService.toggleLike(req.id, targetId, targetType);
-    res.json({
-        success: true,
-        data: result,
-    });
+    try {
+        const { targetId, targetType } = req.body;
+        const result = yield LikeService.toggleLike(req.id, targetId, targetType);
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
 });
 exports.toggleLike = toggleLike;
 const getLikes = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { targetId, targetType } = req.query;
-    const result = yield LikeService.getLikes(targetId, targetType);
-    res.json({
-        success: true,
-        data: result,
-    });
+    try {
+        const { targetId, targetType } = req.query;
+        const result = yield LikeService.getLikeInfo(targetId, targetType);
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
 });
 exports.getLikes = getLikes;

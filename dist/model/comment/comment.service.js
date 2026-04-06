@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPostComments = exports.createComment = void 0;
+const like_model_1 = require("../like/like.model");
 const post_model_1 = require("../post/post.model");
 const comment_model_1 = require("./comment.model");
 // Create comment or reply
@@ -36,14 +37,26 @@ const createComment = (userId, postId, payload) => __awaiter(void 0, void 0, voi
 });
 exports.createComment = createComment;
 // Get comments with replies
-const getPostComments = (postId) => __awaiter(void 0, void 0, void 0, function* () {
+const getPostComments = (postId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const comments = yield comment_model_1.Comment.find({ post: postId })
         .populate("user", "firstName lastName profileImage")
         .sort({ createdAt: -1 });
-    // separate parent + replies
-    const parentComments = comments.filter(c => !c.parentComment);
-    const replies = comments.filter(c => c.parentComment);
-    const formatted = parentComments.map(parent => (Object.assign(Object.assign({}, parent.toObject()), { replies: replies.filter(r => { var _a; return ((_a = r.parentComment) === null || _a === void 0 ? void 0 : _a.toString()) === parent._id.toString(); }) })));
+    const enrichedComments = yield Promise.all(comments.map((comment) => __awaiter(void 0, void 0, void 0, function* () {
+        const totalLikes = yield like_model_1.Like.countDocuments({
+            targetId: comment._id,
+            targetType: "comment",
+        });
+        const likedByMe = !!(yield like_model_1.Like.findOne({
+            user: userId,
+            targetId: comment._id,
+            targetType: "comment",
+        }));
+        return Object.assign(Object.assign({}, comment.toObject()), { totalLikes,
+            likedByMe });
+    })));
+    const parentComments = enrichedComments.filter((c) => !c.parentComment);
+    const replies = enrichedComments.filter((c) => c.parentComment);
+    const formatted = parentComments.map((parent) => (Object.assign(Object.assign({}, parent), { replies: replies.filter((r) => { var _a; return ((_a = r.parentComment) === null || _a === void 0 ? void 0 : _a.toString()) === parent._id.toString(); }) })));
     return formatted;
 });
 exports.getPostComments = getPostComments;

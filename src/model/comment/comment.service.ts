@@ -1,4 +1,5 @@
 
+import { Like } from "../like/like.model";
 import { Post } from "../post/post.model";
 import { Comment } from "./comment.model";
 
@@ -32,19 +33,48 @@ export const createComment = async (
 };
 
 // Get comments with replies
-export const getPostComments = async (postId: string) => {
+export const getPostComments = async (
+  postId: string,
+  userId?: string
+) => {
   const comments = await Comment.find({ post: postId })
     .populate("user", "firstName lastName profileImage")
     .sort({ createdAt: -1 });
 
-  // separate parent + replies
-  const parentComments = comments.filter(c => !c.parentComment);
-  const replies = comments.filter(c => c.parentComment);
+  const enrichedComments = await Promise.all(
+    comments.map(async (comment) => {
+      const totalLikes = await Like.countDocuments({
+        targetId: comment._id,
+        targetType: "comment",
+      });
 
-  const formatted = parentComments.map(parent => ({
-    ...parent.toObject(),
+      const likedByMe = !!(await Like.findOne({
+        user: userId,
+        targetId: comment._id,
+        targetType: "comment",
+      }));
+
+      return {
+        ...comment.toObject(),
+        totalLikes,
+        likedByMe,
+      };
+    })
+  );
+
+  const parentComments = enrichedComments.filter(
+    (c) => !c.parentComment
+  );
+
+  const replies = enrichedComments.filter(
+    (c) => c.parentComment
+  );
+
+  const formatted = parentComments.map((parent) => ({
+    ...parent,
     replies: replies.filter(
-      r => r.parentComment?.toString() === parent._id.toString()
+      (r) =>
+        r.parentComment?.toString() === parent._id.toString()
     ),
   }));
 

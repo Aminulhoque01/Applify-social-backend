@@ -9,30 +9,57 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getLikes = exports.toggleLike = void 0;
+exports.getLikeInfo = exports.toggleLike = void 0;
 const like_model_1 = require("./like.model");
-// Toggle Like / Unlike
 const toggleLike = (userId, targetId, targetType) => __awaiter(void 0, void 0, void 0, function* () {
     const existing = yield like_model_1.Like.findOne({
         user: userId,
         targetId,
         targetType,
     });
+    let liked = false;
     if (existing) {
         yield existing.deleteOne();
-        return { liked: false };
+        liked = false;
     }
-    yield like_model_1.Like.create({
-        user: userId,
+    else {
+        yield like_model_1.Like.create({
+            user: userId,
+            targetId,
+            targetType,
+        });
+        liked = true;
+    }
+    const totalLikes = yield like_model_1.Like.countDocuments({
         targetId,
         targetType,
     });
-    return { liked: true };
+    return {
+        liked,
+        totalLikes,
+        targetId,
+        targetType,
+    };
 });
 exports.toggleLike = toggleLike;
-// Get users who liked
-const getLikes = (targetId, targetType) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield like_model_1.Like.find({ targetId, targetType })
-        .populate("user", "firstName lastName");
+// reusable helper
+const getLikeInfo = (targetId, targetType, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const totalLikes = yield like_model_1.Like.countDocuments({
+        targetId,
+        targetType,
+    });
+    let likedByMe = false;
+    if (userId) {
+        const existing = yield like_model_1.Like.findOne({
+            user: userId,
+            targetId,
+            targetType,
+        });
+        likedByMe = !!existing;
+    }
+    return {
+        totalLikes,
+        likedByMe,
+    };
 });
-exports.getLikes = getLikes;
+exports.getLikeInfo = getLikeInfo;

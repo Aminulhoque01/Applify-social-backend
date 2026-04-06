@@ -18,6 +18,6 @@ const likeSchema = new mongoose_1.Schema({
         required: true,
     },
 }, { timestamps: true });
-// prevent duplicate likes
+// same user can't like same target twice
 likeSchema.index({ user: 1, targetId: 1, targetType: 1 }, { unique: true });
 exports.Like = (0, mongoose_1.model)("Like", likeSchema);

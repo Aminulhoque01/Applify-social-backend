@@ -16,10 +16,11 @@ export const createComment = async (req: any, res: Response) => {
 };
 
 // Get all comments + replies for a post
-export const getComments = async (req: Request, res: Response) => {
-  const { postId } = req.params;
-
-  const result = await CommentService.getPostComments(postId as string);
+export const getComments = async (req: any, res: Response) => {
+  const result = await CommentService.getPostComments(
+    req.params.postId,
+    req.id
+  );
 
   res.json({
     success: true,
