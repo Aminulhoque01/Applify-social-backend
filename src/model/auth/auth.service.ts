@@ -48,3 +48,28 @@ export const updateUserService = async (userId: string, payload: any) => {
 
   return updatedUser;
 };
+
+
+export const followUser = async (userId: string, targetId: string) => {
+  await User.findByIdAndUpdate(userId, {
+    $addToSet: { following: targetId },
+  });
+
+  await User.findByIdAndUpdate(targetId, {
+    $addToSet: { followers: userId },
+  });
+
+  return { message: "Followed successfully" };
+};
+
+export const unfollowUser = async (userId: string, targetId: string) => {
+  await User.findByIdAndUpdate(userId, {
+    $pull: { following: targetId },
+  });
+
+  await User.findByIdAndUpdate(targetId, {
+    $pull: { followers: userId },
+  });
+
+  return { message: "Unfollowed successfully" };
+};

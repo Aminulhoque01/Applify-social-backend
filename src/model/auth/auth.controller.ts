@@ -81,3 +81,21 @@ export const updateUserController = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+
+export const followUser = async (req: Request, res: Response) => {
+  const result = await AuthService.followUser(
+    req.body.userId,
+    req.params.id as string
+  );
+  res.json(result);
+};
+
+export const unfollowUser = async (req: Request, res: Response) => {
+  const result = await AuthService.unfollowUser(
+    req.body.userId,
+    req.params.id as string
+  );
+  res.json(result);
+};
