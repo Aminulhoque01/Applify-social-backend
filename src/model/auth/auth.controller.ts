@@ -20,6 +20,23 @@ export const login = async (req: Request, res: Response) => {
   });
 };
 
+export const getAllUser= async(req:Request, res:Response)=>{
+  try {
+    const allUser = await AuthService.getAllUser();
+
+    res.status(200).json({
+      success: true,
+      data: allUser,
+    });
+
+  } catch (error : any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
 export const getUserController = async (req: Request, res: Response) => {
   try {
     const userId = req.id;
@@ -86,7 +103,7 @@ export const updateUserController = async (req: Request, res: Response) => {
 
 export const followUser = async (req: Request, res: Response) => {
   const result = await AuthService.followUser(
-    req.body.userId,
+    req.userId,
     req.params.id as string
   );
   res.json(result);

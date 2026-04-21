@@ -33,6 +33,12 @@ export const loginUser = async (payload: any) => {
 };
 
 
+export const getAllUser= async()=>{
+  const allUser= await User.find();
+  return allUser;
+}
+
+
 export const getUserByIdService = async (userId: string) => {
   const user = await User.findById(userId).select("-password");
   return user;
