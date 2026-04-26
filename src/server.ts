@@ -7,7 +7,8 @@ import postRouter from "./model/post/post.route";
 import commentRouter from "./model/comment/comment.route";
 import LinkRouter from "./model/like/like.route";
 import followersRouter from "./model/follow/follow.route";
- 
+import { initSocket } from "./socket/socket";
+import http from "http"; 
 
 dotenv.config();
 
@@ -17,6 +18,15 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+
+const server = http.createServer(app);
+
+export const io = initSocket(server);
+
+server.listen(5000, () => {
+  console.log("Server running");
+});
 
 // Routes
 app.use("/api/auth", AuthRouter);
