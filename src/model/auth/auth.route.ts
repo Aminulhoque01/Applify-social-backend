@@ -1,5 +1,5 @@
 import express from "express";
-import { register, login, getUserController, updateUserController, unfollowUser, followUser, getAllUser } from "./auth.controller";
+import { register, login, getUserController, updateUserController,   getAllUser } from "./auth.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { upload } from "../middleware/upload";
  
@@ -16,7 +16,6 @@ AuthRouter.get("/me", authMiddleware, getUserController);
 AuthRouter.put("/",   authMiddleware,
   upload.single("profileImage"), updateUserController);
 
-AuthRouter.post("/follow/:id", followUser);
-AuthRouter.post("/unfollow/:id", unfollowUser);  
+  
 
 export default AuthRouter;

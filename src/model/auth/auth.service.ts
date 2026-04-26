@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../User/user.model";
 import cloudinary from "../../config/cloudinary";
+import { Follow } from "../follow/follow.model";
 
 export const registerUser = async (payload: any) => {
   const hashedPassword = await bcrypt.hash(payload.password, 10);
@@ -39,9 +40,44 @@ export const getAllUser= async()=>{
 }
 
 
-export const getUserByIdService = async (userId: string) => {
-  const user = await User.findById(userId).select("-password");
-  return user;
+export const getUserByIdService = async (
+  userId: string
+) => {
+  const user = await User.findById(userId).select(
+    "-password"
+  );
+
+  if (!user) return null;
+
+  const followersDocs = await Follow.find({
+    following: userId,
+  }).populate(
+    "follower",
+    "firstName lastName username profileImage"
+  );
+
+  const followingDocs = await Follow.find({
+    follower: userId,
+  }).populate(
+    "following",
+    "firstName lastName username profileImage"
+  );
+
+  const followers = followersDocs.map(
+    (item: any) => item.follower
+  );
+
+  const following = followingDocs.map(
+    (item: any) => item.following
+  );
+
+  return {
+    user,
+    followers,
+    following,
+    followersCount: followers.length,
+    followingCount: following.length,
+  };
 };
  
 
@@ -56,26 +92,4 @@ export const updateUserService = async (userId: string, payload: any) => {
 };
 
 
-export const followUser = async (userId: string, targetId: string) => {
-  await User.findByIdAndUpdate(userId, {
-    $addToSet: { following: targetId },
-  });
-
-  await User.findByIdAndUpdate(targetId, {
-    $addToSet: { followers: userId },
-  });
-
-  return { message: "Followed successfully" };
-};
-
-export const unfollowUser = async (userId: string, targetId: string) => {
-  await User.findByIdAndUpdate(userId, {
-    $pull: { following: targetId },
-  });
-
-  await User.findByIdAndUpdate(targetId, {
-    $pull: { followers: userId },
-  });
-
-  return { message: "Unfollowed successfully" };
-};
+ 

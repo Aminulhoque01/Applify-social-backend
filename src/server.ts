@@ -6,6 +6,7 @@ import AuthRouter from "./model/auth/auth.route";
 import postRouter from "./model/post/post.route";
 import commentRouter from "./model/comment/comment.route";
 import LinkRouter from "./model/like/like.route";
+import followersRouter from "./model/follow/follow.route";
  
 
 dotenv.config();
@@ -19,6 +20,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", AuthRouter);
+app.use("/api/follow", followersRouter);
 app.use("/api/post", postRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/like", LinkRouter);

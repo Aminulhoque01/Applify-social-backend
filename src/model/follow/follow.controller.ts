@@ -7,7 +7,7 @@ export const followUserController = async (
   res: Response
 ) => {
   try {
-    const userId = req.userId as string;
+    const userId = req.id as string;
     const targetId = req.params.id;
 
     const result =
@@ -34,7 +34,7 @@ export const unfollowUserController = async (
   res: Response
 ) => {
   try {
-    const userId = req.userId as string;
+    const userId = req.id as string;
     const targetId = req.params.id;
 
     await FollowService.unfollowUserService(

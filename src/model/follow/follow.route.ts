@@ -5,13 +5,14 @@ import {
   getFollowersController,
   getFollowingController,
 } from "./follow.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
-const router = Router();
+const followersRouter = Router();
 
-router.post("/follow/:id", followUserController);
-router.delete("/unfollow/:id", unfollowUserController);
+followersRouter.post("/:id", authMiddleware, followUserController);
+followersRouter.delete("/unfollow/:id", unfollowUserController);
 
-router.get("/followers/:id", getFollowersController);
-router.get("/following/:id", getFollowingController);
+followersRouter.get("/:id", getFollowersController);
+followersRouter.get("/:id", getFollowingController);
 
-export default router;
+export default followersRouter;
