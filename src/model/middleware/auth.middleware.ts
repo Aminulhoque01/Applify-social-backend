@@ -19,7 +19,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
     console.log("decoded token:", decoded);
 
-    req.id = decoded.id; // 👈 MUST match how you signed token
+    req.id = decoded.id;  
 
     next();
   } catch (error) {
