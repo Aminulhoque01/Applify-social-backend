@@ -17,6 +17,10 @@ const notificationSchema = new Schema(
       enum: ["follow", "message", "like"],
       required: true,
     },
+    message: {
+      type: String,
+      default: "",
+    },
     isRead: {
       type: Boolean,
       default: false,
