@@ -9,6 +9,7 @@ import LinkRouter from "./model/like/like.route";
 import followersRouter from "./model/follow/follow.route";
 import { initSocket } from "./socket/socket";
 import http from "http"; 
+import notificationRouter from "./model/notification/notification.route";
 
 dotenv.config();
 
@@ -34,7 +35,7 @@ app.use("/api/follow", followersRouter);
 app.use("/api/post", postRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/like", LinkRouter);
-
+app.use("/api/notifications", notificationRouter);
 // Health check route
 app.get("/", (req, res) => {
   res.status(200).json({
