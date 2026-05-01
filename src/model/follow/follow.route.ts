@@ -1,29 +1,18 @@
-import { Router } from "express"; 
- 
+import { Router } from "express";
+import {
+  followUserController,
+  unfollowUserController,
+  getFollowersController,
+  getFollowingController,
+} from "./follow.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { deleteNotificationController, getNotificationsController, markAsReadController } from "../notification/notification.controller";
 
-const notificationRouter = Router();
+const followersRouter = Router();
 
-// 🔔 Get all notifications
-notificationRouter.get(
-  "/",
-  authMiddleware,
-  getNotificationsController
-);
+followersRouter.post("/:id", authMiddleware, followUserController);
+followersRouter.delete("/unfollow/:id", unfollowUserController);
 
-// ✅ Mark single notification as read
-notificationRouter.patch(
-  "/read/:id",
-  authMiddleware,
-  markAsReadController
-);
+followersRouter.get("/:id", getFollowersController);
+followersRouter.get("/:id", getFollowingController);
 
-// 🗑️ Delete notification
-notificationRouter.delete(
-  "/:id",
-  authMiddleware,
-  deleteNotificationController
-);
-
-export default notificationRouter;
+export default followersRouter;
