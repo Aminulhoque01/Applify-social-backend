@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { FollowService } from "./follow.service";
+import { getIO, onlineUsers } from "../../socket/socket";
+import { Notification } from "../notification/notification.model";
+import { io } from "../../server";
+import { NotificationService } from "../notification/notification.service";
  
 
 export const followUserController = async (
@@ -100,4 +104,36 @@ export const getFollowingController = async (
       message: error.message,
     });
   }
+};
+
+
+export const markAsReadController = async (
+  req: Request,
+  res: Response
+) => {
+  const notificationId = req.params.id;
+  const userId = req.userId as string;
+
+  const result =
+    await NotificationService.markAsReadService(
+      notificationId as string
+    );
+
+  // 🔔 update badge
+  const count = await Notification.countDocuments({
+    receiver: userId,
+    isRead: false,
+  });
+
+  const socketId = onlineUsers.get(userId);
+
+  if (socketId) {
+    const io = getIO();
+    io.to(socketId).emit("notification-count", count);
+  }
+
+  res.json({
+    success: true,
+    data: result,
+  });
 };

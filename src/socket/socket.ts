@@ -1,11 +1,19 @@
 import { Server } from "socket.io";
 import { User } from "../model/User/user.model";
+import { Notification } from "../model/notification/notification.model";
  
 
-const onlineUsers = new Map<string, string>();
+export const onlineUsers = new Map<string, string>();
+
+let io: Server;
+
+export const getIO = () => {
+  if (!io) throw new Error("Socket not initialized");
+  return io;
+};
 
 export const initSocket = (server: any) => {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: "*",
     },
@@ -14,6 +22,7 @@ export const initSocket = (server: any) => {
   io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
+    // 🟢 USER ONLINE
     socket.on("user-online", async (userId: string) => {
       onlineUsers.set(userId, socket.id);
 
@@ -21,9 +30,18 @@ export const initSocket = (server: any) => {
         isOnline: true,
       });
 
+      // 🔔 send unread notification count
+      const count = await Notification.countDocuments({
+        receiver: userId,
+        isRead: false,
+      });
+
+      socket.emit("notification-count", count);
+
       io.emit("online-users", Array.from(onlineUsers.keys()));
     });
 
+    // ❌ DISCONNECT
     socket.on("disconnect", async () => {
       const disconnectedUser = [...onlineUsers.entries()].find(
         ([, socketId]) => socketId === socket.id
