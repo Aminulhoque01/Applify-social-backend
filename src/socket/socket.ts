@@ -6,10 +6,13 @@ import { Message } from "../model/message/message.model";
 
 export const onlineUsers = new Map<string, string>();
 
-let io: Server;
+let io: Server | null = null;
 
+// ✅ safe getter
 export const getIO = () => {
-  if (!io) throw new Error("Socket not initialized");
+  if (!io) {
+    throw new Error("Socket not initialized");
+  }
   return io;
 };
 
@@ -27,31 +30,35 @@ export const initSocket = (server: any) => {
     // 🟢 USER ONLINE
     // =========================
     socket.on("user-online", async (userId: string) => {
-      onlineUsers.set(userId, socket.id);
+      try {
+        onlineUsers.set(userId, socket.id);
 
-      await User.findByIdAndUpdate(userId, {
-        isOnline: true,
-      });
+        await User.findByIdAndUpdate(userId, {
+          isOnline: true,
+        });
 
-      // 🔔 unread notification count
-      const count = await Notification.countDocuments({
-        receiver: userId,
-        isRead: false,
-      });
+        // 🔔 unread notification count
+        const count = await Notification.countDocuments({
+          receiver: userId,
+          isRead: false,
+        });
 
-      socket.emit("notification-count", count);
+        socket.emit("notification-count", count);
 
-      io.emit("online-users", Array.from(onlineUsers.keys()));
+        io?.emit("online-users", Array.from(onlineUsers.keys()));
+      } catch (err) {
+        console.log("user-online error:", err);
+      }
     });
 
     // =========================
     // 💬 SEND MESSAGE
     // =========================
     socket.on("send-message", async (data) => {
-      const { senderId, receiverId, text, conversationId } = data;
-
       try {
-        // 💾 save message
+        const { senderId, receiverId, text, conversationId } = data;
+
+        // 💾 save DB
         const message = await Message.create({
           sender: senderId,
           conversationId,
@@ -62,19 +69,19 @@ export const initSocket = (server: any) => {
 
         if (receiverSocketId) {
           // 📩 send to receiver
-          io.to(receiverSocketId).emit("receive-message", message);
+          io?.to(receiverSocketId).emit("receive-message", message);
 
-          // ✅ delivered status
-          io.to(receiverSocketId).emit("message-delivered", {
+          // ✅ delivered
+          io?.to(receiverSocketId).emit("message-delivered", {
             messageId: message._id,
           });
         }
 
-        // 📤 send back to sender (optional)
+        // 📤 sender confirmation
         socket.emit("message-sent", message);
 
-      } catch (error) {
-        console.log("Message error:", error);
+      } catch (err) {
+        console.log("send-message error:", err);
       }
     });
 
@@ -85,7 +92,7 @@ export const initSocket = (server: any) => {
       const receiverSocketId = onlineUsers.get(receiverId);
 
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("typing", { senderId });
+        io?.to(receiverSocketId).emit("typing", { senderId });
       }
     });
 
@@ -93,7 +100,7 @@ export const initSocket = (server: any) => {
       const receiverSocketId = onlineUsers.get(receiverId);
 
       if (receiverSocketId) {
-        io.to(receiverSocketId).emit("stop-typing", { senderId });
+        io?.to(receiverSocketId).emit("stop-typing", { senderId });
       }
     });
 
@@ -101,16 +108,20 @@ export const initSocket = (server: any) => {
     // 👁️ MESSAGE SEEN
     // =========================
     socket.on("message-seen", async ({ messageId, senderId }) => {
-      await Message.findByIdAndUpdate(messageId, {
-        isRead: true,
-      });
-
-      const senderSocketId = onlineUsers.get(senderId);
-
-      if (senderSocketId) {
-        io.to(senderSocketId).emit("message-seen", {
-          messageId,
+      try {
+        await Message.findByIdAndUpdate(messageId, {
+          isRead: true,
         });
+
+        const senderSocketId = onlineUsers.get(senderId);
+
+        if (senderSocketId) {
+          io?.to(senderSocketId).emit("message-seen", {
+            messageId,
+          });
+        }
+      } catch (err) {
+        console.log("seen error:", err);
       }
     });
 
@@ -118,24 +129,28 @@ export const initSocket = (server: any) => {
     // ❌ DISCONNECT
     // =========================
     socket.on("disconnect", async () => {
-      const disconnectedUser = [...onlineUsers.entries()].find(
-        ([, socketId]) => socketId === socket.id
-      );
-
-      if (disconnectedUser) {
-        const userId = disconnectedUser[0];
-
-        onlineUsers.delete(userId);
-
-        await User.findByIdAndUpdate(userId, {
-          isOnline: false,
-          lastSeen: new Date(),
-        });
-
-        io.emit(
-          "online-users",
-          Array.from(onlineUsers.keys())
+      try {
+        const disconnectedUser = [...onlineUsers.entries()].find(
+          ([, socketId]) => socketId === socket.id
         );
+
+        if (disconnectedUser) {
+          const userId = disconnectedUser[0];
+
+          onlineUsers.delete(userId);
+
+          await User.findByIdAndUpdate(userId, {
+            isOnline: false,
+            lastSeen: new Date(),
+          });
+
+          io?.emit(
+            "online-users",
+            Array.from(onlineUsers.keys())
+          );
+        }
+      } catch (err) {
+        console.log("disconnect error:", err);
       }
     });
   });

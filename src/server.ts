@@ -23,7 +23,7 @@ app.use(express.json());
 
 const server = http.createServer(app);
 
-export const io = initSocket(server);
+initSocket(server); 
 
 server.listen(5000, () => {
   console.log("Server running");
